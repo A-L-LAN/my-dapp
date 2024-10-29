@@ -1,5 +1,4 @@
 import Web3 from "web3";
-console.log("Web3 version:", Web3.version);
 import { useEffect, useState } from "react";
 
 const CONTRACT_ADDRESS = "your_contract_address_here";
