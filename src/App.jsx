@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 const CONTRACT_ADDRESS = "your_contract_address_here";
 const CONTRACT_ABI = [
-  // ABI array here
+  // ABI array 
 ];
 
 const App = () => {
