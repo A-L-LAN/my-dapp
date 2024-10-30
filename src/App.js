@@ -1,9 +1,39 @@
 import Web3 from "web3";
 import { useEffect, useState } from "react";
 
-const CONTRACT_ADDRESS = "your_contract_address_here";
+const CONTRACT_ADDRESS = "0x540d7E428D5207B30EE03F2551Cbb5751D3c7569";
 const CONTRACT_ABI = [
-  // ABI array here
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "x",
+				"type": "uint256"
+			}
+		],
+		"name": "set",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "get",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
 ];
 
 const App = () => {
@@ -28,10 +58,27 @@ const App = () => {
     }
   };
 
+
   const setData = async () => {
     if (contract && web3) {
-      const accounts = await web3.eth.getAccounts();
-      await contract.methods.set(inputValue).send({ from: accounts[0] });
+      try {
+        // Request account access if needed
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        
+        const accounts = await web3.eth.getAccounts();
+        if (accounts.length === 0) {
+          alert("No accounts found. Make sure MetaMask is connected.");
+          return;
+        }
+
+        // Send transaction
+        await contract.methods.set(inputValue).send({ from: accounts[0] });
+        alert("Transaction successful!");
+        setInputValue(""); // Reset the input field
+      } catch (error) {
+        console.error("Error sending transaction:", error);
+        alert("Error sending transaction. Check console for details.");
+      }
     }
   };
 
