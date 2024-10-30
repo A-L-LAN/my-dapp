@@ -1,8 +1,53 @@
 import Web3 from "web3";
 import { useEffect, useState } from "react";
 
-const CONTRACT_ADDRESS = "0x8101801e0279cC370C78d4b64C835173e1229E7F";
+const CONTRACT_ADDRESS = "0xc8CEF6EdbAd93e2842478100c9b5630849bD8326";
 const CONTRACT_ABI = [
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "decrement",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "get",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getMessage",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "increment",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
 	{
 		"inputs": [
 			{
@@ -17,27 +62,24 @@ const CONTRACT_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"inputs": [],
-		"name": "get",
-		"outputs": [
+		"inputs": [
 			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
+				"internalType": "string",
+				"name": "newMessage",
+				"type": "string"
 			}
 		],
-		"stateMutability": "view",
+		"name": "updateMessage",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ];
 
 const App = () => {
   const [storedData, setStoredData] = useState(null);
+  const [message, setMessage] = useState("");
+  const [newMessage, setNewMessage] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [web3, setWeb3] = useState(null);
   const [contract, setContract] = useState(null);
@@ -58,6 +100,12 @@ const App = () => {
     }
   };
 
+  const getMessage = async () => {
+    if (contract) {
+      const currentMessage = await contract.methods.getMessage().call();
+      setMessage(currentMessage);
+    }
+  };
 
   const setData = async () => {
     if (contract && web3) {
@@ -66,21 +114,54 @@ const App = () => {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         
         const accounts = await web3.eth.getAccounts();
-        if (accounts.length === 0) {
-          alert("No accounts found. Make sure MetaMask is connected.");
-          return;
-        }
-
-        // Send transaction
         await contract.methods.set(inputValue).send({ from: accounts[0] });
-        alert("Transaction successful!");
-        setInputValue(""); // Reset the input field
-      } catch (error) {
-        console.error("Error sending transaction:", error);
-        alert("Error sending transaction. Check console for details.");
-      }
-    }
-  };
+              alert("Data updated!");
+              setInputValue("");
+            } catch (error) {
+              console.error("Error:", error);
+            }
+          }
+        };
+
+        const increment = async () => {
+          if (contract && web3) {
+            try {
+              await window.ethereum.request({ method: 'eth_requestAccounts' });
+              const accounts = await web3.eth.getAccounts();
+              await contract.methods.increment().send({ from: accounts[0] });
+              getData(); // Refresh displayed data
+            } catch (error) {
+              console.error("Error:", error);
+            }
+          }
+        };
+      
+        const decrement = async () => {
+          if (contract && web3) {
+            try {
+              await window.ethereum.request({ method: 'eth_requestAccounts' });
+              const accounts = await web3.eth.getAccounts();
+              await contract.methods.decrement().send({ from: accounts[0] });
+              getData(); // Refresh displayed data
+            } catch (error) {
+              console.error("Error:", error);
+            }
+          }
+        };
+      
+        const updateMessage = async () => {
+          if (contract && web3) {
+            try {
+              await window.ethereum.request({ method: 'eth_requestAccounts' });
+              const accounts = await web3.eth.getAccounts();
+              await contract.methods.updateMessage(newMessage).send({ from: accounts[0] });
+              setNewMessage(""); // Reset input
+              getMessage(); // Refresh displayed message
+            } catch (error) {
+              console.error("Error:", error);
+            }
+          }
+        };
 
   return (
     <div>
@@ -90,12 +171,29 @@ const App = () => {
         <p>Stored Data: {storedData}</p>
       </div>
       <div>
+        <button onClick={increment}>Increase Number</button>
+        <button onClick={decrement}>Decrease Number</button>
+      </div>
+      <div>
         <input
           type="number"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
         />
         <button onClick={setData}>Set Data</button>
+      </div>
+      <div>
+        <button onClick={getMessage}>Get Message</button>
+        <p>Message: {message}</p>
+      </div>
+      <div>
+        <input
+          type="text"
+          value={newMessage}
+          placeholder="Enter new message"
+          onChange={(e) => setNewMessage(e.target.value)}
+        />
+        <button onClick={updateMessage}>Update Message</button>
       </div>
     </div>
   );
