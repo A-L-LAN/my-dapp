@@ -1,13 +1,8 @@
 import Web3 from "web3";
 import { useEffect, useState } from "react";
 
-const CONTRACT_ADDRESS = "0xc8CEF6EdbAd93e2842478100c9b5630849bD8326";
+const CONTRACT_ADDRESS = "0xbCC4cb89dEee89d01deF4213A0a6E518494c2Fb4";
 const CONTRACT_ABI = [
-	{
-		"inputs": [],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
 	{
 		"inputs": [],
 		"name": "decrement",
@@ -17,7 +12,45 @@ const CONTRACT_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "get",
+		"name": "increment",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "x",
+				"type": "uint256"
+			}
+		],
+		"name": "setData",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "newMessage",
+				"type": "string"
+			}
+		],
+		"name": "updateMessage",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getData",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -40,39 +73,6 @@ const CONTRACT_ABI = [
 		],
 		"stateMutability": "view",
 		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "increment",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "x",
-				"type": "uint256"
-			}
-		],
-		"name": "set",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "newMessage",
-				"type": "string"
-			}
-		],
-		"name": "updateMessage",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	}
 ];
 
@@ -88,15 +88,24 @@ const App = () => {
     if (typeof window.ethereum !== "undefined") {
       const web3Instance = new Web3(window.ethereum);
       setWeb3(web3Instance);
+  
       const contractInstance = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
       setContract(contractInstance);
+  
     }
   }, []);
+  
+  useEffect(() => {
+    if (contract) {
+      getData(); // Fetch and display the stored data
+    }
+  }, [contract]); // Adding contract as a dependency
+  
 
   const getData = async () => {
     if (contract) {
-      const data = await contract.methods.get().call();
-      setStoredData(data);
+      const data = await contract.methods.getData().call();
+      setStoredData(data.toString())
     }
   };
 
@@ -107,21 +116,22 @@ const App = () => {
     }
   };
 
-  const setData = async () => {
-    if (contract && web3) {
-      try {
-        // Request account access if needed
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        
-        const accounts = await web3.eth.getAccounts();
-        await contract.methods.set(inputValue).send({ from: accounts[0] });
+        const setData = async () => {
+          if (contract && web3) {
+            try {
+              // Request account access if needed
+              await window.ethereum.request({ method: 'eth_requestAccounts' });
+              const accounts = await web3.eth.getAccounts();
+              await contract.methods.setData(inputValue).send({ from: accounts[0] });
               alert("Data updated!");
               setInputValue("");
+              getData(); // Refresh displayed data
             } catch (error) {
               console.error("Error:", error);
             }
           }
         };
+        
 
         const increment = async () => {
           if (contract && web3) {
@@ -142,6 +152,7 @@ const App = () => {
               await window.ethereum.request({ method: 'eth_requestAccounts' });
               const accounts = await web3.eth.getAccounts();
               await contract.methods.decrement().send({ from: accounts[0] });
+              setData(); // Reset input
               getData(); // Refresh displayed data
             } catch (error) {
               console.error("Error:", error);
