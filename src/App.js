@@ -1,7 +1,7 @@
 import Web3 from "web3";
 import { useEffect, useState } from "react";
 
-const CONTRACT_ADDRESS = "0x540d7E428D5207B30EE03F2551Cbb5751D3c7569";
+const CONTRACT_ADDRESS = "0x8101801e0279cC370C78d4b64C835173e1229E7F";
 const CONTRACT_ABI = [
 	{
 		"inputs": [
